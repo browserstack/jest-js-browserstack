@@ -1,5 +1,3 @@
-// @ts-check
-
 const { Builder, By, Key, until } = require("selenium-webdriver");
 const https =  require("https");
 
@@ -17,7 +15,7 @@ describe("BStack demo test", () => {
 			browser_version: "latest",
 			project: "BStack Demo",
 			build: "jest-browserstack",
-			name: "login test",
+			name: "single test",
 			"browserstack.local": "false",
 			"browserstack.selenium_version": "3.6.0",
 			"browserstack.user": username,

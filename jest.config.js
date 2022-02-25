@@ -1,11 +1,6 @@
-/*
- * For a detailed explanation regarding each configuration property, visit:
- * https://jestjs.io/docs/configuration
- */
-
-const buildName = "jest-browserstack Dt - " + Date.now();
-
-const username = process.env.BROWSERSTACK_USERNAME || "", accessKey = process.env.BROWSERSTACK_ACCESS_KEY || "";
+const buildName = "jest-browserstack Dt - " + Date.now(),
+	username = process.env.BROWSERSTACK_USERNAME || "",
+	accessKey = process.env.BROWSERSTACK_ACCESS_KEY || "";
 
 module.exports = {
 	coverageProvider: "v8",

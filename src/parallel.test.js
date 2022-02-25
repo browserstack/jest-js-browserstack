@@ -1,5 +1,3 @@
-// @ts-check
-
 const { Builder, By, Key, until } = require("selenium-webdriver");
 const https = require("https");
 
@@ -33,12 +31,11 @@ const setStatusAndKillDriver = async (driver, statusFail) => {
 describe("BStack demo test", () => {
 	test.concurrent.each(global.CAPABILITIES)(
 		"login test on %j",
-		// @ts-ignore
 		async (capabilies) => {
 			let statusFail;
 			let driver = await createDriver({
 				...capabilies,
-				name: "login test",
+				name: "login - parallel test " + (capabilies.device||(capabilies.browserName + " " + capabilies.browser_version)),
 			});
 			try {
 				await driver.get("https://bstackdemo.com");
@@ -75,11 +72,10 @@ describe("BStack demo test", () => {
 
 	test.concurrent.each(global.CAPABILITIES)(
 		"product tests on %j",
-		// @ts-ignore
 		async (capabilies) => {
 			let driver = await createDriver({
 					...capabilies,
-					name: "product tests",
+					name: "product - parallel test " + (capabilies.device||(capabilies.browserName + " " + capabilies.browser_version)),
 				}),
 				statusFail;
 

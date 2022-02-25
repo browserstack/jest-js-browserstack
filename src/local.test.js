@@ -1,16 +1,11 @@
-// @ts-check
-
-const { Builder, By, Key, until } = require("selenium-webdriver");
+const { Builder, By } = require("selenium-webdriver");
 const browserstackLocal = require("browserstack-local");
 const https = require("https");
 
 describe("BStack demo test", () => {
 	let driver,
 		statusFail = true, 
-		// localIdentifier = Date.now().toString();
-		localIdentifier = "local-testing";
-	
-	let local = new browserstackLocal.Local();
+		local = new browserstackLocal.Local();
 
 	beforeEach(async () => {
 
@@ -18,7 +13,6 @@ describe("BStack demo test", () => {
 
 		await new Promise((res) => {
 			local.start({
-				// localIdentifier, 
 				key: accessKey, 
 				verbose: true, logFile: "./local.log" }, res)
 		})
@@ -30,9 +24,8 @@ describe("BStack demo test", () => {
 			browser_version: "latest",
 			project: "BStack Demo",
 			build: "jest-browserstack",
-			name: "login test",
+			name: "local test",
 			"browserstack.local": true,
-			// "browserstack.localIdentifier": localIdentifier,
 			"browserstack.selenium_version": "3.6.0",
 			"browserstack.user": username,
 			"browserstack.key": accessKey,
@@ -75,7 +68,6 @@ describe("BStack demo test", () => {
 		}
 		if(local) {
 			await new Promise((res) => {
-				// @ts-ignore
 				local.stop(res);
 			})
 		}
