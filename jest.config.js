@@ -5,7 +5,8 @@ const buildName = "jest-browserstack Dt - " + Date.now(),
 module.exports = {
 	coverageProvider: "v8",
 	globals: {
-		CAPABILITIES: [{
+		CAPABILITIES: [
+			{
 				os: "Windows",
 				os_version: "10",
 				browserName: "Chrome",
@@ -16,10 +17,10 @@ module.exports = {
 				"browserstack.key": accessKey,
 			},
 			{
-				os: "Windows",
-				os_version: "10",
+				os: "OS X",
+				os_version: "Monterey",
 				browserName: "Chrome",
-				browser_version: "latest-1",
+				browser_version: "latest",
 				project: "BStack Demo",
 				build: buildName,
 				"browserstack.user": username,
@@ -29,15 +30,14 @@ module.exports = {
 				os: "OS X",
 				os_version: "Big Sur",
 				browserName: "Safari",
-				browser_version: "latest",
 				project: "BStack Demo",
 				build: buildName,
 				"browserstack.user": username,
 				"browserstack.key": accessKey,
 			},
 			{
-				os: "OS X",
-				os_version: "Big Sur",
+				os: "Windows",
+				os_version: "11",
 				browserName: "Firefox",
 				browser_version: "latest",
 				project: "BStack Demo",
@@ -46,9 +46,18 @@ module.exports = {
 				"browserstack.key": accessKey,
 			},
 			{
-				device: "Google Pixel 6",
-				browserName: "Chrome",
-				realMobile: true,
+				browserName: "Android",
+				device: "Samsung Galaxy S20",
+				realMobile: "true",
+				project: "BStack Demo",
+				build: buildName,
+				"browserstack.user": username,
+				"browserstack.key": accessKey,
+			},
+			{
+				browserName: "iPhone",
+				device: "iPhone 12 Pro Max",
+				realMobile: "true",
 				project: "BStack Demo",
 				build: buildName,
 				"browserstack.user": username,

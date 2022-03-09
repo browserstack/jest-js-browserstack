@@ -8,7 +8,7 @@ const createDriver = async (capabilies) => {
 		.usingHttpAgent(
 			new https.Agent({
 				keepAlive: true,
-				keepAliveMsecs: 1000000
+				keepAliveMsecs: 1000000,
 			})
 		)
 		.build();
@@ -22,7 +22,15 @@ const createDriver = async (capabilies) => {
 
 const setStatusAndKillDriver = async (driver, statusFail) => {
 	if (driver) {
-		await driver.executeScript(`browserstack_executor: ${JSON.stringify({action: "setSessionStatus", arguments: {status: statusFail?"failed":"passed", reason: statusFail? statusFail:""}})}`)
+		await driver.executeScript(
+			`browserstack_executor: ${JSON.stringify({
+				action: "setSessionStatus",
+				arguments: {
+					status: statusFail ? "failed" : "passed",
+					reason: statusFail ? statusFail : "",
+				},
+			})}`
+		);
 		await driver.quit();
 	}
 	if (statusFail) throw statusFail;
@@ -35,7 +43,9 @@ describe("BStack demo test", () => {
 			let statusFail;
 			let driver = await createDriver({
 				...capabilies,
-				name: "login - parallel test " + (capabilies.device||(capabilies.browserName + " " + capabilies.browser_version)),
+				name:
+					"login - parallel test " +
+					(capabilies.device || capabilies.browserName),
 			});
 			try {
 				await driver.get("https://bstackdemo.com");
@@ -75,7 +85,9 @@ describe("BStack demo test", () => {
 		async (capabilies) => {
 			let driver = await createDriver({
 					...capabilies,
-					name: "product - parallel test " + (capabilies.device||(capabilies.browserName + " " + capabilies.browser_version)),
+					name:
+						"product - parallel test " +
+						(capabilies.device || capabilies.browserName),
 				}),
 				statusFail;
 
@@ -96,7 +108,7 @@ describe("BStack demo test", () => {
 					.findElement(By.css("input[value='Samsung'] + span"))
 					.click();
 
-				while (!(await driver.executeScript("return document.readyState === 'complete'"))){}
+				await driver.sleep(1500);
 
 				products = await driver.findElements(By.css(".shelf-item"));
 
