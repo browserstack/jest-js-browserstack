@@ -1,10 +1,10 @@
 const { Builder, By, Key, until } = require("selenium-webdriver");
 const https = require("https");
 
-const createDriver = async (capabilies) => {
+const createDriver = async (capabilities) => {
 	let driver = await new Builder()
 		.usingServer("https://hub-cloud.browserstack.com/wd/hub")
-		.withCapabilities(capabilies)
+		.withCapabilities(capabilities)
 		.usingHttpAgent(
 			new https.Agent({
 				keepAlive: true,
@@ -13,7 +13,7 @@ const createDriver = async (capabilies) => {
 		)
 		.build();
 
-	if (!capabilies.realMobile) {
+	if (!capabilities.realMobile) {
 		await driver.manage().window().maximize();
 	}
 
@@ -36,16 +36,16 @@ const setStatusAndKillDriver = async (driver, statusFail) => {
 	if (statusFail) throw statusFail;
 };
 
-describe("BStack demo test", () => {
-	test.concurrent.each(global.CAPABILITIES)(
-		"login test on %j",
-		async (capabilies) => {
+describe.each(global.CAPABILITIES)("BStack demo test on %j", (capabilities) => {
+	test.concurrent(
+		"login test",
+		async () => {
 			let statusFail;
 			let driver = await createDriver({
-				...capabilies,
+				...capabilities,
 				name:
 					"login - parallel test " +
-					(capabilies.device || capabilies.browserName),
+					(capabilities.device || capabilities.browserName),
 			});
 			try {
 				await driver.get("https://bstackdemo.com");
@@ -80,14 +80,14 @@ describe("BStack demo test", () => {
 		10000000
 	);
 
-	test.concurrent.each(global.CAPABILITIES)(
-		"product tests on %j",
-		async (capabilies) => {
+	test.concurrent(
+		"product tests",
+		async () => {
 			let driver = await createDriver({
-					...capabilies,
+					...capabilities,
 					name:
 						"product - parallel test " +
-						(capabilies.device || capabilies.browserName),
+						(capabilities.device || capabilities.browserName),
 				}),
 				statusFail;
 

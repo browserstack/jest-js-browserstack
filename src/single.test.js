@@ -1,14 +1,15 @@
 const { Builder, By, Key, until } = require("selenium-webdriver");
-const https =  require("https");
+const https = require("https");
 
 describe("BStack demo test", () => {
 	let driver,
 		statusFail = true;
 
-	const username = process.env.BROWSERSTACK_USERNAME || "", accessKey = process.env.BROWSERSTACK_ACCESS_KEY || "";
+	const username = process.env.BROWSERSTACK_USERNAME || "",
+		accessKey = process.env.BROWSERSTACK_ACCESS_KEY || "";
 
 	beforeEach(async () => {
-		let capabilies = {
+		let capabilities = {
 			os: "Windows",
 			os_version: "11",
 			browserName: "Chrome",
@@ -24,11 +25,11 @@ describe("BStack demo test", () => {
 
 		driver = await new Builder()
 			.usingServer("https://hub-cloud.browserstack.com/wd/hub")
-			.withCapabilities(capabilies)
+			.withCapabilities(capabilities)
 			.usingHttpAgent(
 				new https.Agent({
 					keepAlive: true,
-					keepAliveMsecs: 1000000
+					keepAliveMsecs: 1000000,
 				})
 			)
 			.build();

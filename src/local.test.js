@@ -4,20 +4,25 @@ const https = require("https");
 
 describe("BStack demo test", () => {
 	let driver,
-		statusFail = true, 
+		statusFail = true,
 		local = new browserstackLocal.Local();
 
 	beforeEach(async () => {
-
-		const username = process.env.BROWSERSTACK_USERNAME || "", accessKey = process.env.BROWSERSTACK_ACCESS_KEY || "";
+		const username = process.env.BROWSERSTACK_USERNAME || "",
+			accessKey = process.env.BROWSERSTACK_ACCESS_KEY || "";
 
 		await new Promise((res) => {
-			local.start({
-				key: accessKey, 
-				verbose: true, logFile: "./local.log" }, res)
-		})
+			local.start(
+				{
+					key: accessKey,
+					verbose: true,
+					logFile: "./local.log",
+				},
+				res
+			);
+		});
 
-		let capabilies = {
+		let capabilities = {
 			os: "Windows",
 			os_version: "10",
 			browserName: "Chrome",
@@ -33,11 +38,11 @@ describe("BStack demo test", () => {
 
 		driver = await new Builder()
 			.usingServer("https://hub-cloud.browserstack.com/wd/hub")
-			.withCapabilities(capabilies)
+			.withCapabilities(capabilities)
 			.usingHttpAgent(
 				new https.Agent({
 					keepAlive: true,
-					keepAliveMsecs: 1000000
+					keepAliveMsecs: 1000000,
 				})
 			)
 			.build();
@@ -48,7 +53,9 @@ describe("BStack demo test", () => {
 	test("local test", async () => {
 		await driver.get("http://bs-local.com:45691/check");
 
-		expect(await driver.findElement(By.css("body")).getText()).toBe("Up and running")
+		expect(await driver.findElement(By.css("body")).getText()).toBe(
+			"Up and running"
+		);
 
 		statusFail = false;
 	}, 10000000);
@@ -66,10 +73,10 @@ describe("BStack demo test", () => {
 		if (driver) {
 			await driver.quit();
 		}
-		if(local) {
+		if (local) {
 			await new Promise((res) => {
 				local.stop(res);
-			})
+			});
 		}
 	}, 100000);
 });
