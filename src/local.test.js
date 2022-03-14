@@ -22,7 +22,7 @@ describe("BStack demo test", () => {
 			);
 		});
 
-		let capabilies = {
+		let capabilities = {
 			"bstack:options": {
 				os: "Windows",
 				osVersion: "11",

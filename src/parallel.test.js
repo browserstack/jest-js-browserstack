@@ -14,9 +14,9 @@ const createDriver = async (capabilities) => {
 		.build();
 
 	if (
-		!capabilies.realMobile &&
-		!capabilies["bstack:options"] &&
-		!capabilies["bstack:options"].realMobile
+		!capabilities.realMobile &&
+		!capabilities["bstack:options"] &&
+		!capabilities["bstack:options"].realMobile
 	) {
 		await driver.manage().window().maximize();
 	}
@@ -44,13 +44,12 @@ describe.each(global.CAPABILITIES)("BStack demo test on %j", (capabilities) => {
 	test.concurrent(
 		"login test",
 		async () => {
-			let statusFail;
-			let driver = await createDriver({
-				...capabilities,
-				name:
-					"login - parallel test " +
-					(capabilities.device || capabilities.browserName),
-			});
+			capabilities["bstack:options"].sessionName =
+				"login - parallel test " +
+				(capabilities["bstack:options"].deviceName ||
+					capabilities.browserName);
+			let driver = await createDriver(capabilities),
+				statusFail;
 			try {
 				await driver.get("https://bstackdemo.com");
 
@@ -87,12 +86,11 @@ describe.each(global.CAPABILITIES)("BStack demo test on %j", (capabilities) => {
 	test.concurrent(
 		"product tests",
 		async () => {
-			let driver = await createDriver({
-					...capabilities,
-					name:
-						"product - parallel test " +
-						(capabilities.device || capabilities.browserName),
-				}),
+			capabilities["bstack:options"].sessionName =
+				"product - parallel test " +
+				(capabilities["bstack:options"].deviceName ||
+					capabilities.browserName);
+			let driver = await createDriver(capabilities),
 				statusFail;
 
 			try {

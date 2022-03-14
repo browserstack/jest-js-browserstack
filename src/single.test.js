@@ -9,7 +9,7 @@ describe("BStack demo test", () => {
 		accessKey = process.env.BROWSERSTACK_ACCESS_KEY || "";
 
 	beforeEach(async () => {
-		let capabilies = {
+		let capabilities = {
 			"bstack:options": {
 				os: "Windows",
 				osVersion: "11",
