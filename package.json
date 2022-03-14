@@ -14,7 +14,7 @@
 	},
 	"scripts": {
 		"test": "jest",
-		"single": "jest  src/single.test.js",
+		"single": "jest src/single.test.js",
 		"parallel": "jest src/parallel.test.js",
 		"local": "jest src/local.test.js"
 	}
