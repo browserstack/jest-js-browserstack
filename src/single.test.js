@@ -9,18 +9,20 @@ describe("BStack demo test", () => {
 		accessKey = process.env.BROWSERSTACK_ACCESS_KEY || "";
 
 	beforeEach(async () => {
-		let capabilities = {
-			os: "Windows",
-			os_version: "11",
+		let capabilies = {
+			"bstack:options": {
+				os: "Windows",
+				osVersion: "11",
+				local: "false",
+				seleniumVersion: "4.1.0",
+				projectName: "BStack Demo",
+				buildName: "jest-browserstack",
+				sessionName: "single test",
+				userName: username,
+				accessKey: accessKey,
+			},
 			browserName: "Chrome",
-			browser_version: "latest",
-			project: "BStack Demo",
-			build: "jest-browserstack",
-			name: "single test",
-			"browserstack.local": "false",
-			"browserstack.selenium_version": "3.6.0",
-			"browserstack.user": username,
-			"browserstack.key": accessKey,
+			browserVersion: "latest",
 		};
 
 		driver = await new Builder()

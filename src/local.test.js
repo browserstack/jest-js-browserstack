@@ -22,18 +22,20 @@ describe("BStack demo test", () => {
 			);
 		});
 
-		let capabilities = {
-			os: "Windows",
-			os_version: "10",
+		let capabilies = {
+			"bstack:options": {
+				os: "Windows",
+				osVersion: "11",
+				local: true,
+				seleniumVersion: "4.1.0",
+				projectName: "BStack Demo",
+				buildName: "jest-browserstack",
+				sessionName: "local test",
+				userName: username,
+				accessKey: accessKey,
+			},
 			browserName: "Chrome",
-			browser_version: "latest",
-			project: "BStack Demo",
-			build: "jest-browserstack",
-			name: "local test",
-			"browserstack.local": true,
-			"browserstack.selenium_version": "3.6.0",
-			"browserstack.user": username,
-			"browserstack.key": accessKey,
+			browserVersion: "latest",
 		};
 
 		driver = await new Builder()

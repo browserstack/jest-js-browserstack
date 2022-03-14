@@ -13,7 +13,11 @@ const createDriver = async (capabilities) => {
 		)
 		.build();
 
-	if (!capabilities.realMobile) {
+	if (
+		!capabilies.realMobile &&
+		!capabilies["bstack:options"] &&
+		!capabilies["bstack:options"].realMobile
+	) {
 		await driver.manage().window().maximize();
 	}
 
