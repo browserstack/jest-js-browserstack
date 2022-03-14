@@ -1,21 +1,30 @@
 {
-	"name": "jest-browserstack",
-	"version": "1.0.0",
-	"main": "index.js",
-	"author": "Dhruvil Shah <dsdruvil8@gmail.com>",
-	"license": "MIT",
-	"devDependencies": {
-		"@types/jest": "^27.4.0",
-		"jest": "^27.4.7"
-	},
-	"dependencies": {
-		"browserstack-local": "^1.4.8",
-		"selenium-webdriver": "4.1.0"
-	},
-	"scripts": {
-		"test": "jest",
-		"single": "jest  src/single.test.js",
-		"parallel": "jest src/parallel.test.js",
-		"local": "jest src/local.test.js"
-	}
+  "name": "jest-js-browserstack",
+  "version": "1.0.0",
+  "author": "BrowserStack",
+  "license": "MIT",
+  "description": "Selenium examples using JestJS and BrowserStack",
+  "keywords": [
+    "browserstack",
+    "selenium",
+    "automate",
+    "examples",
+    "jest",
+    "jestjs"
+  ],
+  "devDependencies": {
+    "@types/jest": "^27.4.0",
+    "jest": "^27.4.7"
+  },
+  "dependencies": {
+    "browserstack-local": "^1.4.8",
+    "dotenv": "^16.0.0",
+    "selenium-webdriver": "4.1.0"
+  },
+  "scripts": {
+    "test": "jest",
+    "single": "jest src/single.test.js",
+    "parallel": "jest src/parallel.test.js",
+    "local": "jest src/local.test.js"
+  }
 }
