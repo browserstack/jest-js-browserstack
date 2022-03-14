@@ -12,7 +12,8 @@ describe("BStack demo test", () => {
   beforeEach(async () => {
     if (!process.env.BROWSERSTACK_LOCAL) {
       const accessKey = process.env.BROWSERSTACK_ACCESS_KEY || "";
-      const localIdentifier = capabilities["browserstack.localIdentifier"];
+
+      const localIdentifier = capabilities["bstack:options"].localIdentifier;
 
       await new Promise((res) => {
         local.start(
