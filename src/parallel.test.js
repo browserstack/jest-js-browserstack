@@ -48,8 +48,9 @@ describe.each(capabilities)("BStack demo test on %j", (capabilities) => {
       capabilities["bstack:options"].sessionName =
         "login - parallel test " +
         (capabilities["bstack:options"].deviceName || capabilities.browserName);
-      let driver = await createDriver(capabilities),
-        statusFail;
+
+      let statusFail;
+      let driver = await createDriver(capabilities);
       try {
         await driver.get("https://bstackdemo.com");
 
@@ -87,8 +88,8 @@ describe.each(capabilities)("BStack demo test on %j", (capabilities) => {
       capabilities["bstack:options"].sessionName =
         "product - parallel test " +
         (capabilities["bstack:options"].deviceName || capabilities.browserName);
-      let driver = await createDriver(capabilities),
-        statusFail;
+      let statusFail;
+      let driver = await createDriver(capabilities);
 
       try {
         await driver.get("https://bstackdemo.com");
