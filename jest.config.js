@@ -1,4 +1,4 @@
-const buildName = `jest-browserstack Dt -  + Date.now()`;
+const buildName = `jest-browserstack Dt - ${Date.now()}`;
 const username = process.env.BROWSERSTACK_USERNAME || "";
 const accessKey = process.env.BROWSERSTACK_ACCESS_KEY || "";
 
