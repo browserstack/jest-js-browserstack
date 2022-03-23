@@ -1,4 +1,5 @@
 const { Builder, By, Key, until } = require("selenium-webdriver");
+const capabilities = require("../conf/single.conf");
 const https = require("https");
 const capabilities = require("../conf/single.conf");
 
