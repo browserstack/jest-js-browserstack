@@ -1,6 +1,8 @@
+require("dotenv").config();
 const { Builder, By } = require("selenium-webdriver");
 const browserstackLocal = require("browserstack-local");
 const https = require("https");
+const capabilities = require("../conf/local.conf");
 
 describe("BStack demo test", () => {
   let driver;
@@ -8,35 +10,23 @@ describe("BStack demo test", () => {
   let local = new browserstackLocal.Local();
 
   beforeEach(async () => {
-    const username = process.env.BROWSERSTACK_USERNAME || "";
-    const accessKey = process.env.BROWSERSTACK_ACCESS_KEY || "";
+    if (!process.env.BROWSERSTACK_LOCAL) {
+      const accessKey = process.env.BROWSERSTACK_ACCESS_KEY || "";
 
-    await new Promise((res) => {
-      local.start(
-        {
-          key: accessKey,
-          verbose: true,
-          logFile: "./local.log",
-        },
-        res
-      );
-    });
+      const localIdentifier = capabilities["bstack:options"].localIdentifier;
 
-    let capabilities = {
-      "bstack:options": {
-        os: "Windows",
-        osVersion: "11",
-        local: true,
-        seleniumVersion: "4.1.0",
-        projectName: "BStack Demo",
-        buildName: "jest-browserstack",
-        sessionName: "local test",
-        userName: username,
-        accessKey: accessKey,
-      },
-      browserName: "Chrome",
-      browserVersion: "latest",
-    };
+      await new Promise((res) => {
+        local.start(
+          {
+            key: accessKey,
+            verbose: true,
+            logFile: "./local.log",
+            localIdentifier,
+          },
+          res
+        );
+      });
+    }
 
     driver = await new Builder()
       .usingServer("https://hub-cloud.browserstack.com/wd/hub")

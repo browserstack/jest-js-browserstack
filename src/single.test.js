@@ -1,30 +1,12 @@
 const { Builder, By, Key, until } = require("selenium-webdriver");
+const capabilities = require("../conf/single.conf");
 const https = require("https");
 
 describe("BStack demo test", () => {
   let driver;
   let statusFail = true;
 
-  const username = process.env.BROWSERSTACK_USERNAME || "";
-  const accessKey = process.env.BROWSERSTACK_ACCESS_KEY || "";
-
   beforeEach(async () => {
-    let capabilities = {
-      "bstack:options": {
-        os: "Windows",
-        osVersion: "11",
-        local: "false",
-        seleniumVersion: "4.1.0",
-        projectName: "BStack Demo",
-        buildName: "jest-browserstack",
-        sessionName: "single test",
-        userName: username,
-        accessKey: accessKey,
-      },
-      browserName: "Chrome",
-      browserVersion: "latest",
-    };
-
     driver = await new Builder()
       .usingServer("https://hub-cloud.browserstack.com/wd/hub")
       .withCapabilities(capabilities)

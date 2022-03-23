@@ -1,5 +1,6 @@
 const { Builder, By, Key, until } = require("selenium-webdriver");
 const https = require("https");
+const capabilities = require("../conf/parallel.conf");
 
 const createDriver = async (capabilities) => {
   let driver = await new Builder()
@@ -40,7 +41,7 @@ const setStatusAndKillDriver = async (driver, statusFail) => {
   if (statusFail) throw statusFail;
 };
 
-describe.each(global.CAPABILITIES)("BStack demo test on %j", (capabilities) => {
+describe.each(capabilities)("BStack demo test on %j", (capabilities) => {
   test.concurrent(
     "login test",
     async () => {

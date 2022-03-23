@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "browserstack-local": "^1.4.8",
+    "dotenv": "^16.0.0",
     "selenium-webdriver": "4.1.0"
   },
   "scripts": {
