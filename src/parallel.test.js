@@ -48,7 +48,6 @@ describe.each(capabilities)("BStack demo test on %j", (capabilities) => {
       capabilities["bstack:options"].sessionName =
         "login - parallel test " +
         (capabilities["bstack:options"].deviceName || capabilities.browserName);
-
       let statusFail;
       let driver = await createDriver(capabilities);
       try {
