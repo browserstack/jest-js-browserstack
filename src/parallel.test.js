@@ -4,7 +4,7 @@ const capabilities = require("../conf/parallel.conf");
 
 const createDriver = async (capabilities) => {
   let driver = await new Builder()
-    .usingServer("https://hub-cloud.browserstack.com/wd/hub")
+    .usingServer("https://hub.browserstack.com/wd/hub")
     .withCapabilities(capabilities)
     .usingHttpAgent(
       new https.Agent({

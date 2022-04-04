@@ -28,7 +28,7 @@ describe("BStack demo test", () => {
     }
 
     driver = await new Builder()
-      .usingServer("https://hub-cloud.browserstack.com/wd/hub")
+      .usingServer("https://hub.browserstack.com/wd/hub")
       .withCapabilities(capabilities)
       .usingHttpAgent(
         new https.Agent({
