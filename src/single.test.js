@@ -1,7 +1,6 @@
 const { Builder, By, Key, until } = require("selenium-webdriver");
 const capabilities = require("../conf/single.conf");
 const https = require("https");
-const capabilities = require("../conf/single.conf");
 
 describe("BStack demo test", () => {
   let driver;
@@ -63,4 +62,3 @@ describe("BStack demo test", () => {
     }
   }, 100000);
 });
-
