@@ -82,32 +82,36 @@ describe.each(capabilities)("BStack demo test on %j", (capabilities) => {
   );
 
   test.concurrent(
-    "product tests",
+    "add products to cart",
     async () => {
       capabilities["bstack:options"].sessionName =
-        "product - parallel test " +
+        "add products to cart - parallel test " +
         (capabilities["bstack:options"].deviceName || capabilities.browserName);
       let statusFail;
       let driver = await createDriver(capabilities);
 
       try {
-        await driver.get("https://bstackdemo.com");
+        await driver.get("https://bstackdemo.com/");
+        await driver.wait(until.titleMatches(/StackDemo/i), 10000);
 
-        let products = await driver.findElements(By.css(".shelf-item__title"));
-
-        expect(products).toHaveLength(25);
-
-        await driver.findElement(By.css("input[value='Apple'] + span")).click();
-
-        await driver
-          .findElement(By.css("input[value='Samsung'] + span"))
-          .click();
-
-        await driver.sleep(1500);
-
-        products = await driver.findElements(By.css(".shelf-item"));
-
-        expect(products).toHaveLength(16);
+        // locating product on webpage and getting name of the product
+        let productText = await driver
+          .findElement(By.xpath('//*[@id="1"]/p'))
+          .getText();
+        // clicking the 'Add to cart' button
+        await driver.findElement(By.xpath('//*[@id="1"]/div[4]')).click();
+        // waiting until the Cart pane has been displayed on the webpage
+        driver.findElement(By.className("float-cart__content"));
+        // locating product in cart and getting name of the product in cart
+        let productCartText = await driver
+          .findElement(
+            By.xpath(
+              '//*[@id="__next"]/div/div/div[2]/div[2]/div[2]/div/div[3]/p[1]'
+            )
+          )
+          .getText();
+        // checking whether product has been added to cart by comparing product name
+        expect(productText).toBe(productCartText);
       } catch (e) {
         statusFail = e.message;
       } finally {
