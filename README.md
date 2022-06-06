@@ -1,8 +1,6 @@
 # JestJS BrowserStack <img src="assets/browserstack.png" width=25 height=25> <img src="assets/jest.svg" width=25 height=25>
 
-JestJS integration with BrowserStack for E2E functional testing of UI using Selenium 3.
-
-> To perform tests using Selenium 4, please checkout the selenium 4 branch
+JestJS integration with BrowserStack for E2E functional testing of UI using Selenium and [browserstack-node-sdk](https://www.npmjs.com/package/browserstack-node-sdk).
 
 ## Setup
 
@@ -10,26 +8,16 @@ JestJS integration with BrowserStack for E2E functional testing of UI using Sele
 
 1. Clone the repository
 2. Install the dependencies using `npm install` or `yarn install`
-3. Set environment variables with your [BrowserStack Username and Access Key](https://www.browserstack.com/accounts/settings)
-4. Set them as environment variables:
-   - on mac
-     ```sh
-     export BROWSERSTACK_USERNAME=YOUR_USERNAME
-     export BROWSERSTACK_ACCESS_KEY=YOUR_ACCESS_KEY
-     ```
-   - on windows
-     ```sh
-     set BROWSERSTACK_USERNAME=YOUR_USERNAME
-     set BROWSERSTACK_ACCESS_KEY=YOUR_ACCESS_KEY
-     ```
+3. Set your [BrowserStack Username and Access Key](https://www.browserstack.com/accounts/settings) at [browserstack.yaml](browserstack.yaml).
 
 ## Running sample tests
 
 ---
 
-- To run a single test, run `npm run single` or `yarn run single`
-- To run parallel tests, run `npm run parallel` or `yarn run parallel`
-- To run tests on private websites, run `npm run local` or `yarn run local`
+- To run sample test, run `npm run sample-test` or `yarn run sample-test`
+- To run tests on private websites, 
+   - set browserstackLocal: true at [browserstack.yaml](browserstack.yaml)
+   - run `npm run sample-local-test` or `yarn run sample-local-test`
 
 ## Notes
 
