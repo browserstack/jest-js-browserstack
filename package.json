@@ -14,17 +14,16 @@
   ],
   "devDependencies": {
     "@types/jest": "^27.4.0",
+    "browserstack-node-sdk": "^1.0.2",
     "jest": "^27.4.7"
   },
   "dependencies": {
     "browserstack-local": "^1.4.8",
     "dotenv": "^16.0.0",
-    "selenium-webdriver": "3.6.0"
+    "selenium-webdriver": "4.1.2"
   },
   "scripts": {
-    "test": "jest",
-    "single": "jest src/single.test.js",
-    "parallel": "jest src/parallel.test.js",
-    "local": "jest src/local.test.js"
+    "sample-test": "browserstack-node-sdk jest src/sample.test.js",
+    "sample-local-test": "browserstack-node-sdk jest src/sample-local.test.js"
   }
 }
