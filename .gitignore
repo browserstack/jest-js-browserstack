@@ -1,6 +1,9 @@
 node_modules/
 **/.DS_Store
+package-lock.json
 local.log
+log/
+browserstack.err
 
 .vscode/
 .env
