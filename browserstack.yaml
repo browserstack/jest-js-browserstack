@@ -3,8 +3,8 @@
 # =============================
 # Add your BrowserStack userName and acccessKey here or set BROWSERSTACK_USERNAME and
 # BROWSERSTACK_ACCESS_KEY as env variables
-userName: "YOUR_USERNAME" 
-accessKey: "YOUR_ACCESS_KEY"
+userName: YOUR_USERNAME
+accessKey: YOUR_ACCESS_KEY
 # ===========
 # Build Name
 # ===========
@@ -21,15 +21,15 @@ platforms:
     browser: Chrome
     browserVersion: latest
   - os: Windows
-    osVersion: '10'
+    osVersion: 10
     browser: Edge
     browserVersion: latest
   - device: iPhone 13
     browserName: Safari
-    osVersion: '15'
+    osVersion: 15
   - device: Samsung Galaxy S22 Ultra
     browserName: chrome # Try 'samsung' for Samsung browser
-    osVersion: '12.0'
+    osVersion: 12.0
 # =======================
 # Parallels per Platform
 # =======================
