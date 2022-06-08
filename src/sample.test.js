@@ -16,7 +16,9 @@ describe("BStack demo test", () => {
   
   test("login test", async () => {
     await driver.get("https://bstackdemo.com");
+    await driver.wait(until.titleMatches(/StackDemo/i), 10000);
 
+    await driver.wait(until.elementLocated(By.css("#signin")));
     await driver.findElement(By.css("#signin")).click();
 
     await driver.wait(until.elementLocated(By.css("#username input")));
@@ -45,13 +47,15 @@ describe("BStack demo test", () => {
         await driver.wait(until.titleMatches(/StackDemo/i), 10000);
 
         // locating product on webpage and getting name of the product
+        await driver.wait(until.elementLocated(By.xpath('//*[@id="1"]/p')));
         let productText = await driver
           .findElement(By.xpath('//*[@id="1"]/p'))
           .getText();
         // clicking the 'Add to cart' button
         await driver.findElement(By.xpath('//*[@id="1"]/div[4]')).click();
         // waiting until the Cart pane has been displayed on the webpage
-        driver.findElement(By.className("float-cart__content"));
+        await driver.wait(until.elementLocated(By.className("float-cart__content")));
+        await driver.findElement(By.className("float-cart__content"));
         // locating product in cart and getting name of the product in cart
         let productCartText = await driver
           .findElement(
