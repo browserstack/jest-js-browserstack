@@ -9,7 +9,7 @@ JestJS integration with BrowserStack for E2E functional testing of UI using Sele
 - Install dependencies using, npm install or yarn install
 - To run sample test, run `npm run sample-test` or `yarn run sample-test`
 - To run tests on private websites, 
-   - set browserstackLocal: true at [browserstack.yaml](browserstack.yaml)
+   - set browserstackLocal: true at [browserstack.yml](browserstack.yml)
    - run `npm run sample-local-test` or `yarn run sample-local-test`
 
 ## Integrate your test suite
