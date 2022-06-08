@@ -2,22 +2,33 @@
 
 JestJS integration with BrowserStack for E2E functional testing of UI using Selenium and [browserstack-node-sdk](https://www.npmjs.com/package/browserstack-node-sdk).
 
-## Setup
+## Run sample build
 
 ---
-
-1. Clone the repository
-2. Install the dependencies using `npm install` or `yarn install`
-3. Set your [BrowserStack Username and Access Key](https://www.browserstack.com/accounts/settings) at [browserstack.yaml](browserstack.yaml).
-
-## Running sample tests
-
----
-
+- Clone the repository
+- Install dependencies using, npm install or yarn install
 - To run sample test, run `npm run sample-test` or `yarn run sample-test`
 - To run tests on private websites, 
    - set browserstackLocal: true at [browserstack.yaml](browserstack.yaml)
    - run `npm run sample-local-test` or `yarn run sample-local-test`
+
+## Integrate your test suite
+
+---
+1. Install browserstack-node-sdk as a dev-dependency
+```
+npm i -D browserstack-node-sdk
+or
+yarn add --dev browserstack-node-sdk
+```
+2. Add a browserstack.yml/yaml file at root of your jest project with your [BrowserStack Username and Access Key](https://www.browserstack.com/accounts/settings).
+3. Add a new command for running tests on browserstack in scripts tag of package.json,
+```
+"scripts": {
+    "test": "jest ...args",
+    "browserstack-test": "browserstack-node-sdk jest ...args"
+  },
+```
 
 ## Notes
 
