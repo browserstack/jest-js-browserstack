@@ -7,6 +7,7 @@ JestJS integration with BrowserStack for E2E functional testing of UI using Sele
 ---
 - Clone the repository
 - Install dependencies using, npm install or yarn install
+- Set your [BrowserStack Username and Access Key](https://www.browserstack.com/accounts/settings) in [browserstack.yml](browserstack.yml) `npx setup --username userName --key accessKey`
 - To run sample test, run `npm run sample-test` or `yarn run sample-test`
 - To run tests on private websites, 
    - set browserstackLocal: true at [browserstack.yml](browserstack.yml)
@@ -21,14 +22,18 @@ npm i -D browserstack-node-sdk
 or
 yarn add --dev browserstack-node-sdk
 ```
-2. Add a browserstack.yml/yaml file at root of your jest project with your [BrowserStack Username and Access Key](https://www.browserstack.com/accounts/settings).
-3. Add a new command for running tests on browserstack in scripts tag of package.json,
+2. Setup
 ```
-"scripts": {
+npx setup --username userName --key accessKey
+```
+  * Adds a browserstack.yml file at root of your mocha project with your [BrowserStack Username and Access Key](https://www.browserstack.com/accounts/settings).
+  * Adds a new command for running tests on browserstack in scripts tag of package.json,
+  ```
+  "scripts": {
     "test": "jest ...args",
     "browserstack-test": "browserstack-node-sdk jest ...args"
   },
-```
+  ```
 
 ## Notes
 
