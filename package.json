@@ -14,7 +14,7 @@
   ],
   "devDependencies": {
     "@types/jest": "^27.4.0",
-    "browserstack-node-sdk": "^1.2.6",
+    "browserstack-node-sdk": "latest",
     "jest": "^27.4.7"
   },
   "dependencies": {
