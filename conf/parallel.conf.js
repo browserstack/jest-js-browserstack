@@ -3,7 +3,7 @@ require("dotenv").config();
 const username = process.env.BROWSERSTACK_USERNAME || "";
 const accessKey = process.env.BROWSERSTACK_ACCESS_KEY || "";
 const buildName =
-  process.env.BROWSERSTACK_BUILD_NAME || `jest-browserstack Dt - ${Date.now()}`;
+  process.env.BROWSERSTACK_BUILD_NAME || "browserstack-build-1";
 
 module.exports = [
   {
@@ -14,9 +14,10 @@ module.exports = [
       seleniumVersion: "4.1.0",
       projectName: "BStack Demo",
       buildName: buildName,
-      sessionName: "parallel test - Chrome latest",
+      sessionName: "Bstack parallel jest-js - Chrome latest",
       userName: username,
       accessKey: accessKey,
+      source: "jest-js:sample-selenium-4-v1.0"
     },
     browserName: "Chrome",
     browserVersion: "latest",
@@ -29,7 +30,7 @@ module.exports = [
       seleniumVersion: "4.1.0",
       projectName: "BStack Demo",
       buildName: buildName,
-      sessionName: "parallel test - Chrome latest-1",
+      sessionName: "Bstack parallel jest-js - Chrome latest-1",
       userName: username,
       accessKey: accessKey,
     },
@@ -43,7 +44,7 @@ module.exports = [
       seleniumVersion: "4.1.0",
       projectName: "BStack Demo",
       buildName: buildName,
-      sessionName: "parallel test - Safari latest",
+      sessionName: "Bstack parallel jest-js - Safari latest",
       userName: username,
       accessKey: accessKey,
     },
@@ -59,7 +60,7 @@ module.exports = [
       seleniumVersion: "4.1.0",
       projectName: "BStack Demo",
       buildName: buildName,
-      sessionName: "parallel test - iPhone",
+      sessionName: "Bstack parallel jest-js - iPhone",
       userName: username,
       accessKey: accessKey,
     },
@@ -74,7 +75,7 @@ module.exports = [
       seleniumVersion: "4.1.0",
       projectName: "BStack Demo",
       buildName: buildName,
-      sessionName: "parallel test - Android",
+      sessionName: "Bstack parallel jest-js - Android",
       userName: username,
       accessKey: accessKey,
     },
