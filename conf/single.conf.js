@@ -10,7 +10,7 @@ module.exports = {
   browser_version: "latest",
   project: "BStack Demo",
   build: process.env.BROWSERSTACK_BUILD_NAME || "browserstack-build-1",
-  name: "Bstack single jest-js",
+  name: "BStack single jest-js",
   "browserstack.local": "false",
   "browserstack.selenium_version": "3.6.0",
   "browserstack.user": username,
