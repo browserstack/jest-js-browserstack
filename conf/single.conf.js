@@ -15,5 +15,5 @@ module.exports = {
   "browserstack.selenium_version": "3.6.0",
   "browserstack.user": username,
   "browserstack.key": accessKey,
-  "browserstack.source": "jest-js:sample-selenium-3-v1.0"
+  "browserstack.source": "jest-js:sample-selenium-3:v1.0"
 };

@@ -15,7 +15,7 @@ module.exports = [
     build: buildName,
     "browserstack.user": username,
     "browserstack.key": accessKey,
-    "browserstack.source": "jest-js:sample-selenium-3-v1.0"
+    "browserstack.source": "jest-js:sample-selenium-3:v1.0"
   },
   {
     os: "OS X",
@@ -26,7 +26,7 @@ module.exports = [
     build: buildName,
     "browserstack.user": username,
     "browserstack.key": accessKey,
-    "browserstack.source": "jest-js:sample-selenium-3-v1.0"
+    "browserstack.source": "jest-js:sample-selenium-3:v1.0"
   },
   {
     os: "OS X",
@@ -36,7 +36,7 @@ module.exports = [
     build: buildName,
     "browserstack.user": username,
     "browserstack.key": accessKey,
-    "browserstack.source": "jest-js:sample-selenium-3-v1.0"
+    "browserstack.source": "jest-js:sample-selenium-3:v1.0"
   },
   {
     os: "Windows",
@@ -47,7 +47,7 @@ module.exports = [
     build: buildName,
     "browserstack.user": username,
     "browserstack.key": accessKey,
-    "browserstack.source": "jest-js:sample-selenium-3-v1.0"
+    "browserstack.source": "jest-js:sample-selenium-3:v1.0"
   },
   {
     browserName: "Android",
@@ -57,7 +57,7 @@ module.exports = [
     build: buildName,
     "browserstack.user": username,
     "browserstack.key": accessKey,
-    "browserstack.source": "jest-js:sample-selenium-3-v1.0"
+    "browserstack.source": "jest-js:sample-selenium-3:v1.0"
   },
   {
     browserName: "iPhone",
@@ -67,6 +67,6 @@ module.exports = [
     build: buildName,
     "browserstack.user": username,
     "browserstack.key": accessKey,
-    "browserstack.source": "jest-js:sample-selenium-3-v1.0"
+    "browserstack.source": "jest-js:sample-selenium-3:v1.0"
   },
 ];
