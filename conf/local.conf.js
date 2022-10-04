@@ -11,11 +11,12 @@ module.exports = {
   browserName: "Chrome",
   browser_version: "latest",
   project: "BStack Demo",
-  build: process.env.BROWSERSTACK_BUILD_NAME || "jest-browserstack",
-  name: "local test",
+  build: process.env.BROWSERSTACK_BUILD_NAME || "browserstack-build-1",
+  name: "BStack local jest-js",
   "browserstack.local": true,
   "browserstack.localIdentifier": localIdentifier,
   "browserstack.selenium_version": "3.6.0",
   "browserstack.user": username,
   "browserstack.key": accessKey,
+  "browserstack.source": "jest-js:sample-selenium-3:v1.0"
 };
