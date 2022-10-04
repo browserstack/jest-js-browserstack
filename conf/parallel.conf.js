@@ -17,7 +17,7 @@ module.exports = [
       sessionName: "BStack parallel jest-js - Chrome latest",
       userName: username,
       accessKey: accessKey,
-      source: "jest-js:sample-selenium-4-v1.0"
+      source: "jest-js:sample-selenium-4:v1.0"
     },
     browserName: "Chrome",
     browserVersion: "latest",
