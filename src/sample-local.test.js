@@ -15,10 +15,8 @@ describe("BStack demo test", () => {
   })
 
   test("local test", async () => {
-    await driver.get("http://bs-local.com:45691/check");
+    await driver.get("http://bs-local.com:45454/");
 
-    expect(await driver.findElement(By.css("body")).getText()).toBe(
-      "Up and running"
-    );
+    expect(await driver.getTitle()).toContain('BrowserStack Local');
   }, 10000000);
 });
