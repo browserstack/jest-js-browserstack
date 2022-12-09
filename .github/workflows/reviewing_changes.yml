@@ -1,4 +1,4 @@
-#This job tests changes made in master branch via PRs.
+#This job tests changes made in main branch via PRs.
 
 name: Review changes from PRs
 run-name: ${{ github.actor }} has created/updated a PR
