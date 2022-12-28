@@ -37,7 +37,7 @@ platforms:
     osVersion: 10
     browser: Edge
     browserVersion: latest
-  - device: Samsung Galaxy S22 Ultra
+  - deviceName: Samsung Galaxy S22 Ultra
     browserName: chrome # Try 'samsung' for Samsung browser
     osVersion: 12.0
 
