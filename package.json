@@ -23,8 +23,8 @@
   },
   "scripts": {
     "test": "jest",
-    "single": "jest src/single.test.js --timeout=120000",
-    "parallel": "jest src/parallel.test.js --timeout=120000",
-    "local": "jest src/local.test.js --timeout=120000"
+    "single": "jest src/single.test.js",
+    "parallel": "jest src/parallel.test.js",
+    "local": "jest src/local.test.js"
   }
 }
