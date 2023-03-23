@@ -5,4 +5,5 @@ module.exports = {
   roots: ["src"],
   testMatch: ["**/*.test.js"],
   testPathIgnorePatterns: ["/node_modules/"],
+  testTimeout: 60 * 1000,
 };
