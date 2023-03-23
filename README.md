@@ -27,8 +27,7 @@ JestJS integration with BrowserStack for E2E functional testing of UI using Sele
 
 ---
 
-- To run a single test, run `npm run single` or `yarn run single`
-- To run parallel tests, run `npm run parallel` or `yarn run parallel`
+- To run tests, run `npm run parallel` or `yarn run parallel`
 - To run tests on private websites, run `npm run local` or `yarn run local`
 
 ## Notes
