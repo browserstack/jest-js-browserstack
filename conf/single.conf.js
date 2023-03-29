@@ -11,7 +11,7 @@ module.exports = {
     sessionName: "BStack single jest-js",
     userName: process.env.BROWSERSTACK_USERNAME || "",
     accessKey: process.env.BROWSERSTACK_ACCESS_KEY || "",
-    source: "jest-js:sample-selenium-4:v1.0"
+    source: "jest-js:sample-selenium-4:v1.1"
   },
   browserName: "Chrome",
   browserVersion: "latest",

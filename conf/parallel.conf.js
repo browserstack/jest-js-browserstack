@@ -17,7 +17,7 @@ module.exports = [
       sessionName: "BStack parallel jest-js - Chrome latest",
       userName: username,
       accessKey: accessKey,
-      source: "jest-js:sample-selenium-4:v1.0"
+      source: "jest-js:sample-selenium-4:v1.1"
     },
     browserName: "Chrome",
     browserVersion: "latest",
@@ -33,6 +33,7 @@ module.exports = [
       sessionName: "BStack parallel jest-js - Chrome latest-1",
       userName: username,
       accessKey: accessKey,
+      source: "jest-js:sample-selenium-4:v1.1"
     },
     browserName: "Chrome",
     browserVersion: "latest-1",
@@ -47,6 +48,7 @@ module.exports = [
       sessionName: "Bstack parallel jest-js - Safari latest",
       userName: username,
       accessKey: accessKey,
+      source: "jest-js:sample-selenium-4:v1.1"
     },
     browserName: "Safari",
     browserVersion: "latest",
@@ -63,6 +65,7 @@ module.exports = [
       sessionName: "BStack parallel jest-js - iPhone",
       userName: username,
       accessKey: accessKey,
+      source: "jest-js:sample-selenium-4:v1.1"
     },
     browserName: "iPhone",
   },
@@ -78,6 +81,7 @@ module.exports = [
       sessionName: "BStack parallel jest-js - Android",
       userName: username,
       accessKey: accessKey,
+      source: "jest-js:sample-selenium-4:v1.1"
     },
     browserName: "Chrome",
   },
