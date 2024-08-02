@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: alpine-latest
     steps:
       - name: 'BrowserStack Env Setup'
         uses: 'browserstack/github-actions/setup-env@master'
