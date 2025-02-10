@@ -1,6 +1,6 @@
 {
   "name": "jest-js-browserstack",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "BrowserStack",
   "license": "MIT",
   "description": "Selenium examples using JestJS and BrowserStack",
