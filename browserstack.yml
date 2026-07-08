@@ -3,8 +3,8 @@
 # =============================
 # Add your BrowserStack userName and acccessKey here or set BROWSERSTACK_USERNAME and
 # BROWSERSTACK_ACCESS_KEY as env variables
-userName: YOUR_USERNAME
-accessKey: YOUR_ACCESS_KEY
+userName: abhi_5a1RhT
+accessKey: L6mTjCq7Xr2TEB3QyWYE
 
 # ======================
 # BrowserStack Reporting
@@ -37,7 +37,7 @@ platforms:
     osVersion: 10
     browserName: Edge
     browserVersion: latest
-  - deviceName: Samsung Galaxy S22 Ultra
+  - deviceName: Redmi Note 11 pro+ 5G
     browserName: chrome # Try 'samsung' for Samsung browser
     osVersion: 12.0
 
