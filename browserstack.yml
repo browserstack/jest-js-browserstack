@@ -3,8 +3,22 @@
 # =============================
 # Add your BrowserStack userName and acccessKey here or set BROWSERSTACK_USERNAME and
 # BROWSERSTACK_ACCESS_KEY as env variables
-userName: YOUR_USERNAME
-accessKey: YOUR_ACCESS_KEY
+userName: cheskamuoz_vdX03D
+accessKey: 8vVtPv56BsqXESsLsCAr
+app: bs://sample.app
+platforms:
+  - platformName: android
+    deviceName: Samsung Galaxy S22 Ultra
+    platformVersion: 12.0
+  - platformName: android
+    deviceName: Google Pixel 7 Pro
+    platformVersion: 13.0
+  - platformName: android
+    deviceName: OnePlus 9
+    platformVersion: 11.0
+browserstackLocal: true
+buildName: browserstack-build-1
+projectName: BrowserStack Sample
 
 # ======================
 # BrowserStack Reporting
