@@ -1,0 +1,99 @@
+# LOC-7549: verify the released BrowserStackLocal Linux x64 binary works end to end on Linux.
+# Temporary check workflow on branch loc-7549-linux-local-check — not for main.
+
+name: LOC-7549 Linux Local binary check
+
+on:
+  push:
+    branches: [loc-7549-linux-local-check]
+  workflow_dispatch:
+
+jobs:
+  binary:
+    name: Binary via ${{ matrix.source }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # What the C# SDK's NuGet BrowserStackLocal 2.4.0 downloads.
+          - source: www-fallback
+            url: https://www.browserstack.com/local-testing/downloads/binaries/BrowserStackLocal-linux-x64
+            curl_flags: ''
+          - source: latest-unzip
+            url: https://local-downloads.browserstack.com/binaries/release/latest_unzip/BrowserStackLocal-linux-x64
+            curl_flags: ''
+          - source: latest-gzip
+            url: https://local-downloads.browserstack.com/binaries/release/latest_gzip/BrowserStackLocal-linux-x64
+            curl_flags: '--compressed'
+    env:
+      BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+      BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+      LOCAL_ID: loc7549-${{ matrix.source }}-${{ github.run_id }}
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Download binary
+        run: |
+          curl -sS -f ${{ matrix.curl_flags }} -D headers.txt -o BrowserStackLocal "${{ matrix.url }}"
+          chmod +x BrowserStackLocal
+          grep -i -E '^(HTTP|content-length|content-encoding|via|x-cache)' headers.txt || true
+          ls -l BrowserStackLocal
+          sha256sum BrowserStackLocal
+          ./BrowserStackLocal --version
+      - name: Start tunnel
+        run: |
+          ./BrowserStackLocal --key "$BROWSERSTACK_ACCESS_KEY" --local-identifier "$LOCAL_ID" \
+            --log-file "$PWD/local.log" --daemon start
+          grep -E 'SUCCESS|ERROR|error' local.log || true
+      - name: Selenium session through the tunnel
+        run: |
+          npm init -y >/dev/null && npm i -s --no-audit --no-fund selenium-webdriver@4 >/dev/null
+          cat > check.js <<'EOF'
+          const { Builder } = require('selenium-webdriver');
+          (async () => {
+            const driver = await new Builder().usingServer('https://hub.browserstack.com/wd/hub')
+              .withCapabilities({ browserName: 'Chrome', 'bstack:options': {
+                os: 'Windows', osVersion: '11', userName: process.env.BROWSERSTACK_USERNAME, accessKey: process.env.BROWSERSTACK_ACCESS_KEY,
+                local: 'true', localIdentifier: process.env.LOCAL_ID, buildName: 'LOC-7549 linux local check',
+                sessionName: process.env.LOCAL_ID } }).build();
+            let ok = false;
+            try {
+              console.log('session id', (await driver.getSession()).getId());
+              await driver.get('http://bs-local.com:45454/');
+              const title = await driver.getTitle();
+              ok = title.includes('BrowserStack Local');
+              console.log(ok ? 'PASS' : 'FAIL', 'title through tunnel:', title);
+              await driver.executeScript(`browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"${ok ? 'passed' : 'failed'}"}}`);
+            } finally { await driver.quit(); }
+            process.exit(ok ? 0 : 1);
+          })().catch(e => { console.log('FAIL', e.message); process.exit(1); });
+          EOF
+          node check.js
+      - name: Stop tunnel
+        if: always()
+        run: |
+          [ -x ./BrowserStackLocal ] && ./BrowserStackLocal --key "$BROWSERSTACK_ACCESS_KEY" --local-identifier "$LOCAL_ID" --daemon stop || true
+          grep -v -i key local.log 2>/dev/null | tail -20 || true
+
+  node-sdk:
+    name: browserstack-node-sdk sample-local-test (fresh HOME)
+    runs-on: ubuntu-latest
+    env:
+      BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+      BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - run: npm install --no-audit --no-fund
+      - name: Run sample-local-test
+        run: |
+          export HOME=$(mktemp -d)
+          npm run sample-local-test
+      - name: Local binary the SDK downloaded
+        if: always()
+        run: |
+          find / -xdev -name 'BrowserStackLocal' -type f -newer package.json 2>/dev/null | while read f; do ls -l "$f"; sha256sum "$f"; "$f" --version || true; done
