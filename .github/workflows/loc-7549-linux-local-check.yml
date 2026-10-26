@@ -1,4 +1,6 @@
-# LOC-7549: verify the released BrowserStackLocal Linux x64 binary works end to end on Linux.
+# LOC-7549: does each Local binding download and start the released Linux binary?
+# Each job uses a fresh HOME so the binding has to download the binary itself, then
+# starts the tunnel, checks it is running and stops it. No Automate session.
 # Temporary check workflow on branch loc-7549-linux-local-check — not for main.
 
 name: LOC-7549 Linux Local binary check
@@ -8,15 +10,17 @@ on:
     branches: [loc-7549-linux-local-check]
   workflow_dispatch:
 
+env:
+  BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+
 jobs:
-  binary:
-    name: Binary via ${{ matrix.source }}
+  raw-download:
+    name: Raw download (${{ matrix.source }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          # What the C# SDK's NuGet BrowserStackLocal 2.4.0 downloads.
           - source: www-fallback
             url: https://www.browserstack.com/local-testing/downloads/binaries/BrowserStackLocal-linux-x64
             curl_flags: ''
@@ -26,74 +30,159 @@ jobs:
           - source: latest-gzip
             url: https://local-downloads.browserstack.com/binaries/release/latest_gzip/BrowserStackLocal-linux-x64
             curl_flags: '--compressed'
-    env:
-      BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
-      BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-      LOCAL_ID: loc7549-${{ matrix.source }}-${{ github.run_id }}
     steps:
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-      - name: Download binary
+      - name: Download and run --version
         run: |
           curl -sS -f ${{ matrix.curl_flags }} -D headers.txt -o BrowserStackLocal "${{ matrix.url }}"
           chmod +x BrowserStackLocal
-          grep -i -E '^(HTTP|content-length|content-encoding|via|x-cache)' headers.txt || true
-          ls -l BrowserStackLocal
+          grep -i -E '^(content-length|content-encoding|etag|x-cache)' headers.txt || true
           sha256sum BrowserStackLocal
           ./BrowserStackLocal --version
-      - name: Start tunnel
-        run: |
-          ./BrowserStackLocal --key "$BROWSERSTACK_ACCESS_KEY" --local-identifier "$LOCAL_ID" \
-            --log-file "$PWD/local.log" --daemon start
-          grep -E 'SUCCESS|ERROR|error' local.log || true
-      - name: Selenium session through the tunnel
-        run: |
-          npm init -y >/dev/null && npm i -s --no-audit --no-fund selenium-webdriver@4 >/dev/null
-          cat > check.js <<'EOF'
-          const { Builder } = require('selenium-webdriver');
-          (async () => {
-            const driver = await new Builder().usingServer('https://hub.browserstack.com/wd/hub')
-              .withCapabilities({ browserName: 'Chrome', 'bstack:options': {
-                os: 'Windows', osVersion: '11', userName: process.env.BROWSERSTACK_USERNAME, accessKey: process.env.BROWSERSTACK_ACCESS_KEY,
-                local: 'true', localIdentifier: process.env.LOCAL_ID, buildName: 'LOC-7549 linux local check',
-                sessionName: process.env.LOCAL_ID } }).build();
-            let ok = false;
-            try {
-              console.log('session id', (await driver.getSession()).getId());
-              await driver.get('http://bs-local.com:45454/');
-              const title = await driver.getTitle();
-              ok = title.includes('BrowserStack Local');
-              console.log(ok ? 'PASS' : 'FAIL', 'title through tunnel:', title);
-              await driver.executeScript(`browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"${ok ? 'passed' : 'failed'}"}}`);
-            } finally { await driver.quit(); }
-            process.exit(ok ? 0 : 1);
-          })().catch(e => { console.log('FAIL', e.message); process.exit(1); });
-          EOF
-          node check.js
-      - name: Stop tunnel
-        if: always()
-        run: |
-          [ -x ./BrowserStackLocal ] && ./BrowserStackLocal --key "$BROWSERSTACK_ACCESS_KEY" --local-identifier "$LOCAL_ID" --daemon stop || true
-          grep -v -i key local.log 2>/dev/null | tail -20 || true
 
-  node-sdk:
-    name: browserstack-node-sdk sample-local-test (fresh HOME)
+  node:
+    name: nodejs browserstack-local@${{ matrix.version }}
     runs-on: ubuntu-latest
-    env:
-      BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
-      BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ['1.5.16']
     steps:
-      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - run: npm install --no-audit --no-fund
-      - name: Run sample-local-test
+      - run: npm init -y >/dev/null && npm i -s --no-audit --no-fund browserstack-local@${{ matrix.version }}
+      - name: Start and stop via binding
         run: |
           export HOME=$(mktemp -d)
-          npm run sample-local-test
-      - name: Local binary the SDK downloaded
+          cat > t.js <<'EOF'
+          const { Local } = require('browserstack-local');
+          const l = new Local();
+          l.start({ key: process.env.BROWSERSTACK_ACCESS_KEY, localIdentifier: 'loc7549-node-' + process.env.GITHUB_RUN_ID }, (err) => {
+            if (err) { console.log('FAIL start:', err.message || err); process.exit(1); }
+            console.log('PASS started, isRunning =', l.isRunning());
+            l.stop(() => { console.log('stopped'); process.exit(0); });
+          });
+          EOF
+          node t.js
+          ls -l "$HOME/.browserstack/BrowserStackLocal" && sha256sum "$HOME/.browserstack/BrowserStackLocal"
+
+  python:
+    name: python browserstack-local==${{ matrix.version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ['1.2.16']
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -q browserstack-local==${{ matrix.version }}
+      - name: Start and stop via binding
+        run: |
+          export HOME=$(mktemp -d)
+          cat > t.py <<'EOF'
+          import os
+          from browserstack.local import Local
+          l = Local()
+          l.start(key=os.environ['BROWSERSTACK_ACCESS_KEY'], localIdentifier='loc7549-py-' + os.environ['GITHUB_RUN_ID'])
+          print('PASS started, isRunning =', l.isRunning())
+          l.stop(); print('stopped')
+          EOF
+          python t.py
+          ls -l "$HOME/.browserstack/BrowserStackLocal" && sha256sum "$HOME/.browserstack/BrowserStackLocal"
+
+  java:
+    name: java browserstack-local-java ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ['1.1.9']
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Fetch binding
+        run: |
+          cat > pom.xml <<EOF
+          <project xmlns="http://maven.apache.org/POM/4.0.0"><modelVersion>4.0.0</modelVersion><groupId>t</groupId><artifactId>t</artifactId><version>1</version>
+          <dependencies><dependency><groupId>com.browserstack</groupId><artifactId>browserstack-local-java</artifactId><version>${{ matrix.version }}</version></dependency></dependencies></project>
+          EOF
+          mvn -q dependency:copy-dependencies -DoutputDirectory=lib
+      - name: Start and stop via binding
+        run: |
+          cat > T.java <<'EOF'
+          import com.browserstack.local.Local; import java.util.HashMap;
+          public class T { public static void main(String[] a) throws Exception {
+            Local l = new Local(); HashMap<String, String> o = new HashMap<>();
+            o.put("key", System.getenv("BROWSERSTACK_ACCESS_KEY")); o.put("localIdentifier", "loc7549-java-" + System.getenv("GITHUB_RUN_ID"));
+            l.start(o); System.out.println("PASS started, isRunning = " + l.isRunning());
+            l.stop(); System.out.println("stopped"); } }
+          EOF
+          javac -cp "lib/*" T.java
+          export FRESH=$(mktemp -d)
+          java -Duser.home="$FRESH" -cp ".:lib/*" T
+          ls -l "$FRESH/.browserstack/BrowserStackLocal" && sha256sum "$FRESH/.browserstack/BrowserStackLocal"
+
+  ruby:
+    name: ruby browserstack-local ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ['1.5.1']
+    steps:
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+      - run: gem install browserstack-local -v ${{ matrix.version }} --no-document
+      - name: Start and stop via binding
+        run: |
+          export HOME=$(mktemp -d)
+          cat > t.rb <<'EOF'
+          require 'browserstack/local'
+          l = BrowserStack::Local.new
+          l.start('key' => ENV['BROWSERSTACK_ACCESS_KEY'], 'localIdentifier' => "loc7549-ruby-#{ENV['GITHUB_RUN_ID']}")
+          puts "PASS started, isRunning = #{l.isRunning}"
+          l.stop; puts 'stopped'
+          EOF
+          ruby t.rb
+          ls -l "$HOME/.browserstack/BrowserStackLocal" && sha256sum "$HOME/.browserstack/BrowserStackLocal"
+
+  csharp:
+    name: csharp BrowserStackLocal ${{ matrix.version }} (NuGet)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 2.4.0 = what the C# SDK pulls (BrowserStackLocal 2.*); 3.1.1 = latest.
+        version: ['2.4.0', '3.1.1']
+    steps:
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build sample
+        run: |
+          dotnet new console -o app --force >/dev/null
+          cd app && dotnet add package BrowserStackLocal --version ${{ matrix.version }} >/dev/null
+          cat > Program.cs <<'EOF'
+          using System; using System.Collections.Generic; using BrowserStack;
+          var l = new Local();
+          var o = new List<KeyValuePair<string, string>> {
+            new("key", Environment.GetEnvironmentVariable("BROWSERSTACK_ACCESS_KEY")),
+            new("localIdentifier", "loc7549-cs-" + Environment.GetEnvironmentVariable("GITHUB_RUN_ID")) };
+          try { l.start(o); Console.WriteLine("PASS started, isRunning = " + l.isRunning()); }
+          catch (Exception e) { Console.WriteLine("FAIL start: " + e.GetType().Name + ": " + e.Message); Environment.ExitCode = 1; }
+          finally { try { l.stop(); Console.WriteLine("stopped"); } catch { } }
+          EOF
+          dotnet build -c Release -o out >/dev/null
+      - name: Start and stop via binding
+        run: |
+          export HOME=$(mktemp -d)
+          dotnet app/out/app.dll
+      - name: Binary the binding downloaded
         if: always()
         run: |
-          find / -xdev -name 'BrowserStackLocal' -type f -newer package.json 2>/dev/null | while read f; do ls -l "$f"; sha256sum "$f"; "$f" --version || true; done
+          find / -xdev -name 'BrowserStackLocal' -type f -mmin -30 2>/dev/null | while read f; do ls -l "$f"; sha256sum "$f"; "$f" --version || true; done
