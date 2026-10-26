@@ -180,9 +180,14 @@ jobs:
           dotnet build -c Release -o out >/dev/null
       - name: Start and stop via binding
         run: |
+          touch "$RUNNER_TEMP/marker"
           export HOME=$(mktemp -d)
+          echo "HOME=$HOME" >> "$GITHUB_ENV"
           dotnet app/out/app.dll
       - name: Binary the binding downloaded
         if: always()
         run: |
-          find / -xdev -name 'BrowserStackLocal' -type f -mmin -30 2>/dev/null | while read f; do ls -l "$f"; sha256sum "$f"; "$f" --version || true; done
+          # BrowserStackLocal 2.x builds its folder from %HOMEDRIVE%%HOMEPATH%, which is not
+          # expanded on Linux, so look everywhere the process could have written.
+          find "$GITHUB_WORKSPACE" "$HOME" /tmp "$RUNNER_TEMP" -name 'BrowserStackLocal*' -type f -newer "$RUNNER_TEMP/marker" 2>/dev/null \
+            | while read f; do ls -l "$f"; sha256sum "$f"; "$f" --version || true; done
