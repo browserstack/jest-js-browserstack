@@ -37,6 +37,25 @@ function buildDriver() {
     .build();
 }
 
+// CI only: put the Automate build/session links in the GitHub run summary.
+async function writeSessionLinks(driver) {
+  const fs = require("fs");
+  try {
+    const id = (await driver.getSession()).getId();
+    const auth = Buffer.from(`${process.env.BROWSERSTACK_USERNAME}:${process.env.BROWSERSTACK_ACCESS_KEY}`).toString("base64");
+    const res = await fetch(`https://api.browserstack.com/automate/sessions/${id}.json`, { headers: { Authorization: `Basic ${auth}` } });
+    const s = (await res.json()).automation_session || {};
+    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, [
+      `| automate session | \`${id}\` |`,
+      `| automate build | ${s.build_hashed_id ? `https://automate.browserstack.com/dashboard/v2/builds/${s.build_hashed_id}` : "n/a"} |`,
+      `| session link | ${s.browser_url || "n/a"} |`,
+      "",
+    ].join("\n"));
+  } catch (e) {
+    console.error("could not fetch session links:", e.message);
+  }
+}
+
 describe("BStack demo test", () => {
   let driver;
   let passed = false;
@@ -46,6 +65,7 @@ describe("BStack demo test", () => {
   });
 
   afterAll(async () => {
+    if (process.env.GITHUB_STEP_SUMMARY) await writeSessionLinks(driver);
     // The SDK marks the session itself; without it, mark it here.
     if (process.env.HUB_URL) {
       const status = { action: "setSessionStatus", arguments: { status: passed ? "passed" : "failed" } };
