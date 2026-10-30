@@ -1,0 +1,315 @@
+# LOC-7627: temporary check workflow on branch loc-7627-node26-binary-test, not for main.
+
+name: LOC-7627 Local binary test
+
+# Smoke-tests a BrowserStackLocal binary (LOC-7627: Node SEA build) per OS/arch:
+#   1. binary starts: `--version` prints a version (size, sha256, startup time -> step summary)
+#   2. one Automate session through the binary: the local sample of
+#      browserstack/jest-js-browserstack (src/sample-local.test.js) loads
+#      http://bs-local.com:45454/ (the binary's own Falcon page) and expects the title
+#      "BrowserStack Local"
+#   3. the binary under test is still on disk, unchanged (see below); its log (access
+#      key redacted) is uploaded
+#
+# How the sample runs:
+#   - native runners: as in jest-js-browserstack's reviewing_changes.yml,
+#     `browserstack-node-sdk jest`. The SDK starts the tunnel itself; browserstack.yml
+#     (written per job) points browserStackLocalOptions.binarypath at the binary under
+#     test.
+#   - centos:7 (glibc 2.17 support floor) and alpine: the binary runs in that container
+#     (`docker run --network host`), started by the workflow; the same test file then
+#     runs under plain jest on the host against the hub (HUB_URL), with local=true and
+#     the tunnel's localIdentifier. The SDK can't start a binary inside a container.
+#
+# Fallback guard: if browserstack-local can't execute the binary at binarypath, it
+# deletes it and downloads the production binary, and the test would then pass on
+# that one. The job fails unless the binary is still there with the downloaded sha256.
+#
+# Uses this repo's BROWSERSTACK_USERNAME / BROWSERSTACK_ACCESS_KEY secrets.
+# Run:   gh workflow run loc-7627-binary-test.yml --ref loc-7627-node26-binary-test \
+#          -f linux_x64_url='<presigned>' ...
+#        A push to the branch runs it with no URLs (nothing tested).
+#        A platform whose URL input is empty is skipped. The URL may point at a
+#        .zip (as distributed: BrowserStackLocal / BrowserStackLocal.exe inside)
+#        or at the raw binary.
+#
+# SECURITY: this repo is public. workflow_dispatch inputs are NOT secrets: they
+# are stored in the run's event payload and visible to anyone who can view the
+# run (UI / API). Only pass short-lived presigned URLs (minutes, not days).
+# The workflow never puts them in env/matrix/artifact names; each job reads its
+# URL straight from the event payload and masks it before use.
+on:
+  push:
+    branches: [loc-7627-node26-binary-test]
+  workflow_dispatch:
+    inputs:
+      binary_version:
+        description: 'Expected version (e.g. 9.1). If set, --version output must contain it. Also used in build names.'
+        required: false
+        default: ''
+      linux_x64_url:
+        description: 'Presigned URL: linux-x64 (also tested in centos:7)'
+        required: false
+        default: ''
+      linux_arm64_url:
+        description: 'Presigned URL: linux-arm64'
+        required: false
+        default: ''
+      alpine_url:
+        description: 'Presigned URL: alpine (linux-x64 musl static)'
+        required: false
+        default: ''
+      darwin_arm64_url:
+        description: 'Presigned URL: darwin-arm64'
+        required: false
+        default: ''
+      darwin_x64_url:
+        description: 'Presigned URL: darwin-x64'
+        required: false
+        default: ''
+      win_x64_url:
+        description: 'Presigned URL: win-x64'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.m.outputs.matrix }}
+      any: ${{ steps.m.outputs.any }}
+    steps:
+      - id: m
+        # Only booleans reach this step; the URLs themselves never do.
+        env:
+          HAS_linux_x64_url: ${{ inputs.linux_x64_url != '' }}
+          HAS_linux_arm64_url: ${{ inputs.linux_arm64_url != '' }}
+          HAS_alpine_url: ${{ inputs.alpine_url != '' }}
+          HAS_darwin_arm64_url: ${{ inputs.darwin_arm64_url != '' }}
+          HAS_darwin_x64_url: ${{ inputs.darwin_x64_url != '' }}
+          HAS_win_x64_url: ${{ inputs.win_x64_url != '' }}
+        run: |
+          all='[
+            {"platform":"linux-x64",         "runner":"ubuntu-latest",    "input":"linux_x64_url",    "exe":"BrowserStackLocal",     "image":""},
+            {"platform":"linux-x64-centos7", "runner":"ubuntu-latest",    "input":"linux_x64_url",    "exe":"BrowserStackLocal",     "image":"centos:7"},
+            {"platform":"linux-arm64",       "runner":"ubuntu-24.04-arm", "input":"linux_arm64_url",  "exe":"BrowserStackLocal",     "image":""},
+            {"platform":"alpine",            "runner":"ubuntu-latest",    "input":"alpine_url",       "exe":"BrowserStackLocal",     "image":"alpine:latest"},
+            {"platform":"darwin-arm64",      "runner":"macos-15",         "input":"darwin_arm64_url", "exe":"BrowserStackLocal",     "image":""},
+            {"platform":"darwin-x64",        "runner":"macos-15-intel",   "input":"darwin_x64_url",   "exe":"BrowserStackLocal",     "image":""},
+            {"platform":"win-x64",           "runner":"windows-latest",   "input":"win_x64_url",      "exe":"BrowserStackLocal.exe", "image":""}
+          ]'
+          enabled=$(env | sed -n 's/^HAS_\(.*\)=true$/\1/p' | jq -R . | jq -sc .)
+          matrix=$(jq -c --argjson on "$enabled" '{include: [ .[] | select(.input as $i | $on | index($i)) ]}' <<<"$all")
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "any=$(jq '.include | length > 0' <<<"$matrix")" >> "$GITHUB_OUTPUT"
+          echo "matrix: $matrix"
+          [[ "$enabled" != "[]" ]] || echo "::warning::no platform URL given, nothing to test"
+
+  test:
+    needs: plan
+    if: needs.plan.outputs.any == 'true'
+    name: ${{ matrix.platform }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+      BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+      EXPECTED_VERSION: ${{ inputs.binary_version }}
+      PLATFORM: ${{ matrix.platform }}
+      CONTAINER_IMAGE: ${{ matrix.image }}
+      EXE: ${{ matrix.exe }}
+      RUNNER_LABEL: ${{ matrix.runner }}
+      LOCAL_IDENTIFIER: gha-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.platform }}
+      BUILD_NAME: local-binary-test ${{ inputs.binary_version || 'unlabelled' }} run ${{ github.run_id }}
+      SESSION_NAME: ${{ matrix.platform }} run ${{ github.run_id }}-${{ github.run_attempt }}
+      PROJECT_NAME: BrowserStackLocal binary test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '20'
+
+      - name: Check secrets
+        run: |
+          [[ -n "$BROWSERSTACK_USERNAME" && -n "$BROWSERSTACK_ACCESS_KEY" ]] || {
+            echo "::error::add repo secrets BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY"; exit 1; }
+          # POSIX-style path on every OS (github.workspace is D:\... on Windows)
+          echo "WORK=$PWD/_bt" >> "$GITHUB_ENV"
+
+      - name: Pull container image
+        if: matrix.image != ''
+        run: docker pull "$CONTAINER_IMAGE"
+
+      - name: Download binary
+        env:
+          INPUT_NAME: ${{ matrix.input }}
+        run: |
+          set -euo pipefail
+          # Read the URL from the event payload (not from env) so it never shows
+          # up in a step's env listing; mask before anything can print it.
+          URL=$(node -e 'const e=require(process.argv[1]);process.stdout.write((e.inputs||{})[process.argv[2]]||"")' "$GITHUB_EVENT_PATH" "$INPUT_NAME")
+          echo "::add-mask::$URL"
+          [[ -n "$URL" ]] || { echo "::error::input $INPUT_NAME is empty"; exit 1; }
+          mkdir -p "$WORK/dl" "$WORK/bin"
+          curl -fsSL --retry 3 --retry-delay 5 -o "$WORK/dl/download" "$URL" || { echo "::error::download failed (expired URL?)"; exit 1; }
+          unset URL
+          magic=$(head -c 4 "$WORK/dl/download" | od -An -tx1 | tr -d ' \n')
+          if [[ "$magic" == 504b0304 ]]; then
+            echo "zip archive, extracting"
+            if command -v unzip >/dev/null; then
+              unzip -q -o "$WORK/dl/download" -d "$WORK/dl/x"
+            else
+              mv "$WORK/dl/download" "$WORK/dl/download.zip"
+              pwsh -NoProfile -Command "Expand-Archive -Force -Path '$(cygpath -w "$WORK/dl/download.zip")' -DestinationPath '$(cygpath -w "$WORK/dl/x")'"
+            fi
+            found=$(find "$WORK/dl/x" -type f -name "$EXE" | head -1)
+            [[ -n "$found" ]] || { echo "::error::$EXE not found in zip"; find "$WORK/dl/x" -type f; exit 1; }
+            mv "$found" "$WORK/bin/$EXE"
+          else
+            echo "raw binary (magic $magic)"
+            mv "$WORK/dl/download" "$WORK/bin/$EXE"
+          fi
+          BIN="$WORK/bin/$EXE"
+          chmod +x "$BIN"
+          if [[ "$RUNNER_OS" == macOS ]]; then
+            xattr -d com.apple.quarantine "$BIN" 2>/dev/null || true
+            codesign -dv "$BIN" 2>&1 | sed 's/^/codesign: /' || true
+          fi
+          file "$BIN" || true
+          echo "BIN=$BIN" >> "$GITHUB_ENV"
+
+      - name: "Check 1: binary starts (--version)"
+        run: |
+          set -euo pipefail
+          now_ms() { perl -MTime::HiRes=time -e 'printf "%d\n", time*1000'; }
+          sha() { (sha256sum "$1" 2>/dev/null || shasum -a 256 "$1") | cut -d' ' -f1; }
+          size=$(wc -c < "$BIN" | tr -d ' ')
+          sum=$(sha "$BIN"); echo "BIN_SHA256=$sum" >> "$GITHUB_ENV"
+          t0=$(now_ms)
+          set +e; out=$(.github/loc-7627/run-bin.sh --version 2>&1); rc=$?; set -e
+          t1=$(now_ms)
+          echo "$out"
+          ver=$(grep -Eo 'BrowserStack Local version [0-9][0-9.]*' <<<"$out" | head -1 || true)
+          {
+            echo "### ${PLATFORM}${CONTAINER_IMAGE:+ (in $CONTAINER_IMAGE)}"
+            echo "| check | result |"
+            echo "|---|---|"
+            echo "| runner | \`$RUNNER_LABEL\` $(uname -sm) |"
+            echo "| size | $size bytes ($((size / 1048576)) MiB) |"
+            echo "| sha256 | \`$sum\` |"
+            echo "| --version | \`${ver:-<no version line>}\` (exit $rc) |"
+            echo "| --version wall time | $((t1 - t0)) ms${CONTAINER_IMAGE:+ (incl. docker run)} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          [[ $rc -eq 0 && -n "$ver" ]] || { echo "::error::--version failed (exit $rc)"; exit 1; }
+          if [[ -n "$EXPECTED_VERSION" && "$ver" != *"$EXPECTED_VERSION"* ]]; then
+            echo "::error::expected version $EXPECTED_VERSION, got '$ver'"; exit 1
+          fi
+
+      # As in reviewing_changes.yml (its postinstall updates browserstack-node-sdk).
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: "Check 2 (SDK): jest local sample, SDK starts the binary"
+        if: matrix.image == ''
+        run: |
+          set -euo pipefail
+          p() { if [[ "$RUNNER_OS" == Windows ]]; then cygpath -m "$1"; else echo "$1"; fi; }
+          # Credentials come from BROWSERSTACK_USERNAME / BROWSERSTACK_ACCESS_KEY.
+          cat > browserstack.yml <<EOF
+          projectName: $PROJECT_NAME
+          buildName: $BUILD_NAME
+          platforms:
+            - os: Windows
+              osVersion: 11
+              browserName: Chrome
+              browserVersion: latest
+          parallelsPerPlatform: 1
+          browserstackLocal: true
+          browserStackLocalOptions:
+            binarypath: "$(p "$BIN")"
+            localIdentifier: $LOCAL_IDENTIFIER
+            logFile: "$(p "$WORK/tunnel.log")"
+          debug: false
+          networkLogs: false
+          consoleLogs: errors
+          EOF
+          cat browserstack.yml
+          npm run sample-local-test
+
+      - name: "Check 2 (container): binary in ${{ matrix.image }}, jest local sample against the hub"
+        if: matrix.image != ''
+        run: |
+          set -euo pipefail
+          now_ms() { perl -MTime::HiRes=time -e 'printf "%d\n", time*1000'; }
+          LOG="$WORK/tunnel.log"
+          export CONTAINER_NAME=bstunnel
+          stop_tunnel() {
+            kill "$PID" 2>/dev/null || true
+            sleep 3
+            kill -9 "$PID" 2>/dev/null || true
+            docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
+          }
+          t0=$(now_ms)
+          .github/loc-7627/run-bin.sh --key "$BROWSERSTACK_ACCESS_KEY" --local-identifier "$LOCAL_IDENTIFIER" > "$LOG" 2>&1 &
+          PID=$!
+          trap stop_tunnel EXIT
+          up=""
+          for _ in $(seq 1 90); do
+            if grep -q 'You can now access your local server' "$LOG"; then up=1; break; fi
+            kill -0 "$PID" 2>/dev/null || break
+            sleep 1
+          done
+          t1=$(now_ms)
+          if [[ -z "$up" ]]; then
+            echo "| tunnel | FAILED to connect within 90s |" >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::tunnel did not come up; log follows"
+            perl -pe 's/\Q$ENV{BROWSERSTACK_ACCESS_KEY}\E/[REDACTED]/g' "$LOG"
+            exit 1
+          fi
+          echo "| tunnel | connected in $((t1 - t0)) ms, local-identifier \`$LOCAL_IDENTIFIER\` |" >> "$GITHUB_STEP_SUMMARY"
+          HUB_URL=https://hub.browserstack.com/wd/hub npm run sample-local-test-plain
+
+      - name: "Check 3: tested the binary we downloaded"
+        if: always() && env.BIN_SHA256 != ''
+        run: |
+          set -euo pipefail
+          [[ -f "$BIN" ]] || {
+            echo "| binary under test | FAILED: deleted during the run (browserstack-local fell back to the production binary) |" >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::$BIN was deleted: browserstack-local could not run it and fell back to a downloaded binary"; exit 1; }
+          now=$( (sha256sum "$BIN" 2>/dev/null || shasum -a 256 "$BIN") | cut -d' ' -f1)
+          if [[ "$now" != "$BIN_SHA256" ]]; then
+            echo "| binary under test | FAILED: changed on disk during the run (auto-update?) |" >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::$BIN changed during the run"; exit 1
+          fi
+          echo "| binary under test | unchanged (sha256 matches) |" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Stop leftovers and redact log
+        if: always()
+        run: |
+          [[ -z "$CONTAINER_IMAGE" ]] || docker rm -f bstunnel >/dev/null 2>&1 || true
+          [[ "$RUNNER_OS" != Windows ]] || taskkill //F //IM "$EXE" >/dev/null 2>&1 || true
+          pkill -f "$WORK/bin/" 2>/dev/null || true
+          LOG="$WORK/tunnel.log"
+          if [[ -f "$LOG" && -n "$BROWSERSTACK_ACCESS_KEY" ]]; then
+            perl -pi -e 's/\Q$ENV{BROWSERSTACK_ACCESS_KEY}\E/[REDACTED]/g' "$LOG"
+            ! grep -qF "$BROWSERSTACK_ACCESS_KEY" "$LOG" || { echo "::error::redaction failed"; rm -f "$LOG"; }
+          fi
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: tunnel-log-${{ matrix.platform }}
+          path: _bt/tunnel.log
+          if-no-files-found: ignore
+          retention-days: 14

@@ -25,6 +25,7 @@
   "scripts": {
     "sample-test": "browserstack-node-sdk jest src/sample.test.js",
     "sample-local-test": "browserstack-node-sdk jest src/sample-local.test.js",
-    "postinstall": "npm update browserstack-node-sdk"
+    "postinstall": "npm update browserstack-node-sdk",
+    "sample-local-test-plain": "jest src/sample-local.test.js"
   }
 }
